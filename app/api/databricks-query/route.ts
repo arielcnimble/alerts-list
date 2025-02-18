@@ -22,7 +22,7 @@ export async function GET() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        statement: "SELECT * FROM nimble_us.data_alerts.stg_alerts LIMIT 10",
+        statement: "WITH ranked AS (SELECT date, notification_name, get_json_object(CAST(notification_attributes AS STRING), '$.my_product_id') AS my_product_id, alert_id, ROW_NUMBER() OVER (PARTITION BY alert_id ORDER BY date) AS rn FROM nimble_us.data_alerts.stg_alerts WHERE get_json_object(CAST(notification_attributes AS STRING), '$.my_product_id') IS NOT NULL) SELECT date, notification_name, my_product_id, alert_id FROM ranked WHERE rn = 1",
         warehouse_id: httpPath.split("/").pop(),
         catalog: "nimble_us",
         schema: "demo"
