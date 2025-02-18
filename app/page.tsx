@@ -24,12 +24,12 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  const handleRowClick = (productId: string, productName: string) => {
-    router.push(`/graph/${productId}?name=${encodeURIComponent(productName)}`);
+  const handleRowClick = (productId: string) => {
+    router.push(`/graph/${productId}`);
   };
-  
+
   return (
-    <div className="min-h-screen bg-[#E0E7FF] font-sans">
+    <div className="min-h-screen bg-[#E0E7FF] font-sans overflow-x-auto">
       {/* Toolbar */}
       <nav className="bg-[#000000] text-white flex items-center justify-between p-4 shadow-md">
         <div className="text-xl font-bold flex items-center">
@@ -50,30 +50,52 @@ const Dashboard = () => {
           <table className="min-w-full table-auto border border-gray-300 shadow-lg rounded-lg">
             <thead className="bg-[#6D6FE2] text-white">
               <tr>
-                <th className="p-4 text-left">Product Name</th>
-                <th className="p-4 text-left">Brand</th>
-                <th className="p-4 text-left">Price</th>
+                <th className="p-4 text-left">Date</th>
+                <th className="p-4 text-left">Notification Name</th>
+                <th className="p-4 text-left">Competitor Product ID</th>
+                <th className="p-4 text-left">Competitor Product Name</th>
+                <th className="p-4 text-left">Product Category</th>
+                <th className="p-4 text-left">My Product Rank</th>
+                <th className="p-4 text-left">My Product Name</th>
+                <th className="p-4 text-left">My Product ID</th>
+                <th className="p-4 text-left">Competitor Rank</th>
+                <th className="p-4 text-left">Competitor Availability Yesterday</th>
+                <th className="p-4 text-left">Competitor Availability Today</th>
+                <th className="p-4 text-left">Is Alert</th>
                 <th className="p-4 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
-              {data.map((item, index) => (
-                <tr
-                  key={index}
-                  className="bg-white hover:bg-[#C7D2FE] cursor-pointer border-b border-gray-200"
-                  onClick={() => handleRowClick(item[7], item[2])}
+              {data.map((item, index) => {
+                const parsedItem = JSON.parse(item[2]);
+                const productId = parsedItem.my_product_id;
 
-                >
-                  <td className="p-4 text-[#1F2937] font-medium">{item[2]}</td>
-                  <td className="p-4 text-[#1F2937]">{item[4]}</td>
-                  <td className="p-4 text-[#1F2937]">${item[22]}</td>
-                  <td className="p-4">
-                    <button className="bg-[#6D6FE2] text-white px-3 py-1 rounded hover:bg-[#5a5ecf]">
-                      View Details
-                    </button>
-                  </td>
-                </tr>
-              ))}
+                return (
+                  <tr
+                    key={index}
+                    className="bg-white hover:bg-[#C7D2FE] cursor-pointer border-b border-gray-200"
+                    onClick={() => handleRowClick(productId)}
+                  >
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{item[0]}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{item[1]}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.competitor_product_id}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.competitor_product_name}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.product_category}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.my_product_rank}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.my_product_name}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.my_product_id}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.competitor_rank}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.competitor_availability_yesterday ? 'Yes' : 'No'}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{parsedItem.competitor_availability_today ? 'Yes' : 'No'}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{item[3] ? 'Yes' : 'No'}</td>
+                    <td className="p-4">
+                      <button className="bg-[#6D6FE2] text-white px-3 py-1 rounded hover:bg-[#5a5ecf]">
+                        View Details
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
           {data.length === 0 && (

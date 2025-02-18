@@ -22,7 +22,7 @@ export async function GET() {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        statement: "SELECT * FROM nimble_us.demo.thrasio_amazon_pdp LIMIT 10",
+        statement: "SELECT * FROM nimble_us.data_alerts.stg_alerts LIMIT 10",
         warehouse_id: httpPath.split("/").pop(),
         catalog: "nimble_us",
         schema: "demo"
