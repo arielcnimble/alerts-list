@@ -1,16 +1,17 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 
 const Dashboard = () => {
   const [data, setData] = useState<any[]>([]);
+  const [readRows, setReadRows] = useState<Record<string, boolean>>({}); // Store read status per Alert ID
   const router = useRouter();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch('/api/databricks-query');
+        const response = await fetch("/api/databricks-query");
         const result = await response.json();
         if (result?.result?.result?.data_array) {
           setData(result.result.result.data_array);
@@ -24,12 +25,27 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
-  const handleRowClick = (productId: string) => {
-    router.push(`/graph/${productId}`);
+  // Toggle read/unread state
+  const toggleReadStatus = async (alertId: string) => {
+    setReadRows((prev) => {
+      const updatedReadRows = { ...prev, [alertId]: !prev[alertId] };
+      return updatedReadRows;
+    });
+
+    // Send API request to update backend (optional)
+    await fetch("/api/toggle-read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ alertId }),
+    });
+  };
+
+  const handleRowClick = (productId: string, alertId: string) => {
+    router.push(`/graph/${productId}?alertId=${alertId}`);
   };
 
   return (
-    <div className="min-h-screen bg-[#E0E7FF] font-sans overflow-x-auto">
+    <div className="min-h-screen bg-[#E0E7FF] font-sans overflow-x-auto p-6">
       {/* Toolbar */}
       <nav className="bg-[#000000] text-white flex items-center justify-between p-4 shadow-md">
         <div className="text-xl font-bold flex items-center">
@@ -52,21 +68,44 @@ const Dashboard = () => {
               <tr>
                 <th className="p-4 text-left">Date</th>
                 <th className="p-4 text-left">Notification Name</th>
+                <th className="p-4 text-left">Product ID</th>
+                {/*<th className="p-4 text-left">Alert ID</th>*/}
+                <th className="p-4 text-left">Mark Read</th>
                 <th className="p-4 text-left">Actions</th>
               </tr>
             </thead>
             <tbody>
               {data.map((item, index) => {
+                const productId = item[2]; // Assuming item[2] is productId
+                const alertId = item[3]; // Assuming item[3] is alertId
+                const isRead = readRows[alertId] || false; // Check if row is read
+
                 return (
                   <tr
                     key={index}
-                    className="bg-white hover:bg-[#C7D2FE] cursor-pointer border-b border-gray-200"
-                    onClick={() => handleRowClick(item[2])}
+                    className={`border-b border-gray-200 cursor-pointer ${
+                      isRead ? "bg-gray-200" : "bg-white hover:bg-[#C7D2FE]"
+                    }`}
                   >
                     <td className="p-4 text-[#1F2937] whitespace-nowrap">{item[0]}</td>
                     <td className="p-4 text-[#1F2937] whitespace-nowrap">{item[1]}</td>
+                    <td className="p-4 text-[#1F2937] whitespace-nowrap">{productId}</td>
+                    {/*<td className="p-4 text-[#1F2937] whitespace-nowrap">{alertId}</td>*/}
+                    {/* Checkbox for Read/Unread */}
+                    <td className="p-4 text-center">
+                      <input
+                        type="checkbox"
+                        checked={isRead}
+                        onChange={() => toggleReadStatus(alertId)}
+                        className="w-5 h-5 accent-blue-600 cursor-pointer"
+                      />
+                    </td>
+                    {/* View Details Button */}
                     <td className="p-4">
-                      <button className="bg-[#6D6FE2] text-white px-3 py-1 rounded hover:bg-[#5a5ecf]">
+                      <button
+                        className="bg-[#6D6FE2] text-white px-3 py-1 rounded hover:bg-[#5a5ecf]"
+                        onClick={() => handleRowClick(productId, alertId)}
+                      >
                         View Details
                       </button>
                     </td>
